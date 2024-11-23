@@ -1,0 +1,23 @@
+{
+  "content_scripts": [
+    {
+      "js": ["movix.js"],
+      "matches": ["https://movix.ru/television/*"]
+    },
+    {
+      "js": ["favorites.js"],
+      "matches": ["https://movix.ru/channels"]
+    },
+    {
+      "js": ["tvtable.js"],
+      "matches": ["https://movix.ru/tv-program-table?*"]
+    },
+    {
+      "js": ["vitrina.js"],
+      "matches": ["https://player.mediavitrina.ru/*/player.html?href=*"]
+    }
+  ],
+  "manifest_version": 3,
+  "name": "Enable movix m3u list",
+  "version": "1.3.0"
+}
