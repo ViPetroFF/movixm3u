@@ -29,16 +29,32 @@ class HttpError extends Error {
 	}
 }
 
+function isHLSCategory(entry) {
+  return entry.category == "hls" || entry.category == "hls_mcast_local";
+}
+
 function getHLSMap(array) {
 	let res = new Map();
 	let timeexpires, lastid;
 	for (let pos in array) {
 		let val = array[pos];
-		let hls=val.urls.filter((object) => object.category == "hls");
+		let hls=val.urls.filter(isHLSCategory);
 		if(hls.length > 0) {
-			res.set(val.id, hls[0].url);
-			timeexpires = hls[0].time_expired;
-			lastid = val.id;
+			//hls.sort((a, b) => {
+			  //const nameA = a.category;//a.name.toUpperCase(); // ignore upper and lowercase
+			  //const nameB = b.category;//b.name.toUpperCase(); // ignore upper and lowercase
+			  //if (nameA < nameB) {
+				//return -1;
+			  //}
+			  //if (nameA > nameB) {
+				//return 1;
+			  //}
+			  // names must be equal
+			  //return 0;
+			//});
+			res.set(val.id, hls.at(-1).url);
+			//timeexpires = hls.at(-1).time_expired;
+			//lastid = val.id;
 		}
 	}
 
@@ -47,19 +63,23 @@ function getHLSMap(array) {
 	return res;
 }
 
+function isHLSSupported(entry) {
+  return entry.type == "hls" || entry.type == "hls_mcast_local";
+}
+
 function getCategoryList(array, category, type) {
 	res = new Array();
 	switch (type) {
 		case "14":
-			res=array.filter((object) => object.available.type != "not-available" && object.categories.some((entry) => entry.id == category));
+			res=array.filter((object) => object.available.type != "not-available"&&object.resources.some(isHLSSupported)&&object.categories.some((entry) => entry.id == category));
 			//res=array.filter((object) => object.categories.some((entry) => entry.id == category));
 			break;
 		case "channel-packages":
-			res=array.filter((object) => object.available.type != "not-available" && object.packages.some((entry) => entry.id == category));
+			res=array.filter((object) => object.available.type != "not-available"&&object.resources.some(isHLSSupported)&&object.packages.some((entry) => entry.id == category));
 			//res=array.filter((object) => object.packages.some((entry) => entry.id == category));
 			break;
 		default:
-			ShowNotAvaible();
+			ShowNotAvailable();
 	}
 
 	return res;
@@ -105,8 +125,8 @@ function getFileName(url) {
 	return strRet;
 }
 
-function ShowNotAvaible() {
-	const textNode = document.createTextNode("Download not avaible");
+function ShowNotAvailable() {
+	const textNode = document.createTextNode("Download not available");
 	const newNode = document.createElement("div");
 	newNode.className = "footer__contact";
 	newNode.appendChild(textNode);
@@ -114,14 +134,14 @@ function ShowNotAvaible() {
 	footer_contact.parentElement.replaceChild(newNode, footer_contact);
 }
 
-function OnNotAvaible() {
+function OnNotAvailable() {
 	console.log("Network failure.");
-	ShowNotAvaible();
+	ShowNotAvailable();
 }
 
-function OnNotAvaible(status, message) {
+function OnNotAvailable(status, message) {
 	console.log("HTTP error: status="+status+", "+message);
-	ShowNotAvaible();
+	ShowNotAvailable();
 }
 
 function CheckHttpStatus(response) {
@@ -130,7 +150,7 @@ function CheckHttpStatus(response) {
 			const strName = getFileName(response.url);
 		    console.log("File '" + strName + "' not found.");
 		default:
-			ShowNotAvaible(response.status, response.statusText);
+			ShowNotAvailable(response.status, response.statusText);
 	}
 }
 
@@ -190,5 +210,5 @@ const lstCategory = getCategoryList(listApi, numCategory, typeCategory);
 if(lstCategory.length > 0){
 	Main(lstCategory, mapHls);
 } else {
-	ShowNotAvaible();
+	ShowNotAvailable();
 }
